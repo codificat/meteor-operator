@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: test-pkglist-pr
+spec:
+  params:
+  - name: baseImage
+    value: quay.io/thoth-station/s2i-minimal-py38-notebook:v0.2.2
+  - name: packages
+    value:
+      - pandas
+      - boto3>=1.24.0
+  - name: name
+    value: custom-package-list
+  - name: description
+    value: Additional packages on top of s2i-minimal
+  - name: creator
+    value: codificat
+  pipelineRef:
+    name: cnbi-package-list
+  serviceAccountName: pipeline
+  workspaces:
+  - name: data
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Mi
+  - configMap:
+      defaultMode: 420
+      items:
+      - key: service-ca.crt
+        path: ca.crt
+      name: openshift-service-ca.crt
+    name: sslcertdir
